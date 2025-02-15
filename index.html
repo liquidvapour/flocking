@@ -97,8 +97,8 @@
           
           // Create a simple geometry to represent the boid (a cone pointing forward)
           const geom = new THREE.ConeGeometry(1, 4, 8);
-          const mat = new THREE.MeshLambertMaterial({ color: 0x00ffcc });
-          this.mesh = new THREE.Mesh(geom, mat);
+          this.material = new THREE.MeshLambertMaterial({ color: 0x00ffcc });
+          this.mesh = new THREE.Mesh(geom, this.material);
           scene.add(this.mesh);
         }
         
@@ -129,12 +129,12 @@
           let foodAttraction = new THREE.Vector3();
           const foodPos = context.foodPos;
           const distToFood = this.position.distanceTo(foodPos);
-          if (distToFood < 100 && this.position.y > 5) {
+          // if (distToFood < 50 && this.position.y > 5) { // Increase detection range
             // apply a downward attraction toward the food (reduce altitude)
-            foodAttraction = foodPos.clone().sub(this.position);
-            foodAttraction.normalize();
-            foodAttraction.multiplyScalar(0.05);
-          }
+          foodAttraction = foodPos.clone().sub(this.position);
+          foodAttraction.normalize();
+          foodAttraction.multiplyScalar(0.05);
+//          }
           
           // Scare behavior: when active, add strong upward force
           let scareForce = new THREE.Vector3();
@@ -181,9 +181,14 @@
             this.velocity.z *= -1;
           
           // Random chance to switch to "Eating" state if close to food
-          if (distToFood < 20 && Math.random() < 0.01) {
+          if (distToFood < 10 && Math.random() < 0.05) { // Increase chance and range
             this.state = "Eating";
             this.eatingStartTime = Date.now();
+            this.material.color.set(0xff0000); // Change color to red when eating
+          } else if (distToFood < 10) {
+            this.material.color.set(0xffa500); // Change color to amber when near food
+          } else {
+            this.material.color.set(0x00ffcc); // Default color
           }
         }
         
@@ -204,6 +209,7 @@
           // Switch back to "Flying" state after a few seconds
           if (Date.now() - this.eatingStartTime > 3000) {
             this.state = "Flying";
+            this.material.color.set(0x00ffcc); // Change color back to default
           }
         }
         
