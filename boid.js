@@ -1,14 +1,5 @@
 export class Boid {
-  constructor(scene, context) {
-    this.context = context;
-    this.MAX_SPEED = context.MAX_SPEED;
-    this.MAX_FORCE = context.MAX_FORCE;
-    this.NEIGHBOR_DIST = context.NEIGHBOR_DIST;
-    this.DESIRED_SEPARATION = context.DESIRED_SEPARATION;
-    this.SCARE_FACTOR = context.SCARE_FACTOR;
-    this.MIN_ALTITUDE = context.MIN_ALTITUDE;
-    this.DETECTION_RANGE = context.DETECTION_RANGE;
-
+  constructor(scene) {
     // Position, velocity, acceleration as THREE.Vector3
     this.position = new THREE.Vector3(
       (Math.random() - 0.5) * 100,
@@ -53,9 +44,9 @@ export class Boid {
   // Flying behavior
   flyingBehavior(boids, context) {
     // Flocking behaviors
-    const sep = this.separate(boids).multiplyScalar(1.5);
-    const ali = this.align(boids);
-    const coh = this.cohesion(boids);
+    const sep = this.separate(boids, context).multiplyScalar(1.5);
+    const ali = this.align(boids, context);
+    const coh = this.cohesion(boids, context);
 
     // Food attraction: if not feeding, and if food is below and not too far, move toward food
     let foodAttraction = new THREE.Vector3();
@@ -71,12 +62,12 @@ export class Boid {
     let scareForce = new THREE.Vector3();
     if (context.scareActive) {
       scareForce.set(0, 1, 0);
-      scareForce.multiplyScalar(this.SCARE_FACTOR);
+      scareForce.multiplyScalar(context.SCARE_FACTOR);
     }
 
     // Maintain minimum altitude
     let altitudeForce = new THREE.Vector3();
-    if (this.position.y < this.MIN_ALTITUDE) {
+    if (this.position.y < context.MIN_ALTITUDE) {
       altitudeForce.set(0, 1, 0);
       altitudeForce.multiplyScalar(0.1);
     }
@@ -92,7 +83,7 @@ export class Boid {
     // Update velocity and position
     this.velocity.add(this.acceleration);
     // Limit speed
-    this.velocity.clampLength(0, this.MAX_SPEED);
+    this.velocity.clampLength(0, context.MAX_SPEED);
     this.position.add(this.velocity);
 
     // Reset acceleration for next frame.
@@ -112,10 +103,10 @@ export class Boid {
       this.velocity.z *= -1;
 
     // Random chance to switch to "Descending" state if close to food and not full
-    if (!this.isFull && distToFood < this.DETECTION_RANGE && Math.random() < 0.05) { // Increase chance and range
+    if (!this.isFull && distToFood < context.DETECTION_RANGE && Math.random() < 0.05) { // Increase chance and range
       this.state = "Descending";
       this.material.color.set(0xffa500); // Change color to amber when descending
-    } else if (distToFood < this.DETECTION_RANGE) {
+    } else if (distToFood < context.DETECTION_RANGE) {
       this.material.color.set(0xffa500); // Change color to amber when near food
     } else {
       this.material.color.set(0x00ffcc); // Default color
@@ -136,13 +127,13 @@ export class Boid {
 
     const desired = targetPos.clone().sub(this.position);
     desired.normalize();
-    desired.multiplyScalar(this.MAX_SPEED);
+    desired.multiplyScalar(context.MAX_SPEED);
     const steer = desired.sub(this.velocity);
-    steer.clampLength(0, this.MAX_FORCE);
+    steer.clampLength(0, context.MAX_FORCE);
 
     this.acceleration.add(steer);
     this.velocity.add(this.acceleration);
-    this.velocity.clampLength(0, this.MAX_SPEED);
+    this.velocity.clampLength(0, context.MAX_SPEED);
     this.position.add(this.velocity);
     this.acceleration.set(0, 0, 0);
 
@@ -162,7 +153,7 @@ export class Boid {
     this.velocity.set(0, 0, 0); // Stop moving
 
     // Maintain separation while eating
-    const sep = this.separate(boids).multiplyScalar(1.5);
+    const sep = this.separate(boids, context).multiplyScalar(1.5);
     this.acceleration.add(sep);
     this.velocity.add(this.acceleration);
     this.position.add(this.velocity);
@@ -172,19 +163,19 @@ export class Boid {
     if (Date.now() - this.eatingStartTime > 3000) {
       this.state = "Flying";
       this.isFull = true;
-      this.fullTime = context.fullTime + Math.random() * 2000; // Add random offset
+      this.fullTime = context.FULL_TIME + Math.random() * 2000; // Add random offset
       this.fullStartTime = Date.now();
       this.material.color.set(0x0000ff); // Change color to blue when full
     }
   }
 
   // Separation: steer to avoid crowding local flockmates
-  separate(boids) {
+  separate(boids, context) {
     const steer = new THREE.Vector3();
     let count = 0;
     for (let other of boids) {
       const d = this.position.distanceTo(other.position);
-      if (d > 0 && d < this.DESIRED_SEPARATION) {
+      if (d > 0 && d < context.DESIRED_SEPARATION) {
         let diff = this.position.clone().sub(other.position);
         diff.normalize();
         diff.divideScalar(d); // Weight by distance
@@ -197,20 +188,20 @@ export class Boid {
     }
     if (steer.length() > 0) {
       steer.normalize();
-      steer.multiplyScalar(this.MAX_SPEED);
+      steer.multiplyScalar(context.MAX_SPEED);
       steer.sub(this.velocity);
-      steer.clampLength(0, this.MAX_FORCE);
+      steer.clampLength(0, context.MAX_FORCE);
     }
     return steer;
   }
 
   // Alignment: steer toward the average heading of local flockmates
-  align(boids) {
+  align(boids, context) {
     const sum = new THREE.Vector3();
     let count = 0;
     for (let other of boids) {
       const d = this.position.distanceTo(other.position);
-      if (d > 0 && d < this.NEIGHBOR_DIST) {
+      if (d > 0 && d < context.NEIGHBOR_DIST) {
         sum.add(other.velocity);
         count++;
       }
@@ -218,39 +209,39 @@ export class Boid {
     if (count > 0) {
       sum.divideScalar(count);
       sum.normalize();
-      sum.multiplyScalar(this.MAX_SPEED);
+      sum.multiplyScalar(context.MAX_SPEED);
       const steer = sum.sub(this.velocity);
-      steer.clampLength(0, this.MAX_FORCE);
+      steer.clampLength(0, context.MAX_FORCE);
       return steer;
     }
     return new THREE.Vector3();
   }
 
   // Cohesion: steer to move toward the average position of local flockmates
-  cohesion(boids) {
+  cohesion(boids, context) {
     const sum = new THREE.Vector3();
     let count = 0;
     for (let other of boids) {
       const d = this.position.distanceTo(other.position);
-      if (d > 0 && d < this.NEIGHBOR_DIST) {
+      if (d > 0 && d < context.NEIGHBOR_DIST) {
         sum.add(other.position);
         count++;
       }
     }
     if (count > 0) {
       sum.divideScalar(count);
-      return this.seek(sum);
+      return this.seek(sum, context);
     }
     return new THREE.Vector3();
   }
 
   // A method that calculates a steering force toward a target
-  seek(target) {
+  seek(target, context) {
     const desired = target.clone().sub(this.position);
     desired.normalize();
-    desired.multiplyScalar(this.MAX_SPEED);
+    desired.multiplyScalar(context.MAX_SPEED);
     const steer = desired.sub(this.velocity);
-    steer.clampLength(0, this.MAX_FORCE);
+    steer.clampLength(0, context.MAX_FORCE);
     return steer;
   }
 }

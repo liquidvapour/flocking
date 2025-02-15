@@ -60,7 +60,7 @@ export function initScene() {
 
   // --- CREATE THE FLOCK ---
   for (let i = 0; i < context.NUM_BOIDS; i++) {
-    context.boids.push(new Boid(scene, context));
+    context.boids.push(new Boid(scene));
   }
 
   // On mouse click, trigger scare for a few seconds and add new food
