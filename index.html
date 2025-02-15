@@ -57,13 +57,6 @@
       directionalLight.position.set(50, 100, 50);
       scene.add(directionalLight);
       
-      // --- ADD A GROUND PLANE ---
-      const groundGeo = new THREE.PlaneGeometry(500, 500);
-      const groundMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
-      const ground = new THREE.Mesh(groundGeo, groundMat);
-      ground.rotation.x = -Math.PI / 2;
-      ground.position.y = 0;
-      scene.add(ground);
       
       // --- ADD A FOOD OBJECT ON THE GROUND ---
       const foodGeometry = new THREE.SphereGeometry(3, 16, 16);
@@ -251,17 +244,33 @@
       for (let i = 0; i < NUM_BOIDS; i++) {
         boids.push(new Boid());
       }
-      
+
+      // Ground class
+      class Ground {
+        constructor(scene) {
+          const groundGeo = new THREE.PlaneGeometry(500, 500);
+          const groundMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
+          this.mesh = new THREE.Mesh(groundGeo, groundMat);
+          this.mesh.rotation.x = -Math.PI / 2;
+          this.mesh.position.y = 0;
+          scene.add(this.mesh);
+        }
+
+        getNormal() {
+          return new THREE.Vector3(0, 1, 0);
+        }
+      }
+
+      // Create ground instance
+      const ground = new Ground(scene);
+
       // Function to create a new food object
       function createFood(position) {
-        //const foodGeometry = new THREE.SphereGeometry(3, 16, 16);
-        //const foodMaterial = new THREE.MeshLambertMaterial({ color: 0xffaa00 });
         const newFood = new THREE.Mesh(foodGeometry, foodMaterial);
         newFood.position.copy(position);
         scene.add(newFood);
       }
 
-      // --- SCARE EVENT HANDLER ---
       // On mouse click, trigger scare for a few seconds and add new food
       window.addEventListener("click", (event) => {
         scareActive = true;
@@ -278,12 +287,13 @@
         // Use Raycaster to find intersection point on the plane
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObject(ground);
+        const intersects = raycaster.intersectObject(ground.mesh);
 
         if (intersects.length > 0) {
           const intersectPoint = intersects[0].point;
+          const normal = ground.getNormal();
+          intersectPoint.add(normal.multiplyScalar(3)); // Place food above the ground
           food.position.copy(intersectPoint);
-          //createFood(intersectPoint);
         }
       });
 
