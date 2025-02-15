@@ -68,11 +68,9 @@ export class Boid {
 
     // Maintain desired altitude
     let altitudeForce = new THREE.Vector3();
-    if (this.position.y < this.desiredAltitude) {
-      console.log("too high", this.position.y);
+    if (this.position.y < context.MIN_ALTITUDE) {
       altitudeForce.set(0, 1, 0).multiplyScalar(0.1);
-    } else if (this.position.y > this.desiredAltitude) {
-      console.log("too low", this.position.y);
+    } else if (this.position.y > context.MIN_ALTITUDE) {
       altitudeForce.set(0, -1, 0).multiplyScalar(0.1);
     }
 
