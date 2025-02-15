@@ -9,6 +9,7 @@ let DESIRED_SEPARATION = 5;
 let SCARE_FACTOR = 0.3;
 let MIN_ALTITUDE = 10;
 let DETECTION_RANGE = 100;
+let FULL_TIME = 3000; // Time boids stay full after eating
 const NUM_BOIDS = 50;
 const boids = [];
 let scareActive = false; // when true, boids add a strong upward force
@@ -94,6 +95,7 @@ export function initScene() {
   const scareFactorSlider = document.getElementById('scareFactor');
   const minAltitudeSlider = document.getElementById('minAltitude');
   const detectionRangeSlider = document.getElementById('detectionRange');
+  const fullTimeSlider = document.getElementById('fullTime');
 
   // Function to save slider values to localStorage
   function saveSliderValues() {
@@ -104,6 +106,7 @@ export function initScene() {
     localStorage.setItem('scareFactor', scareFactorSlider.value);
     localStorage.setItem('minAltitude', minAltitudeSlider.value);
     localStorage.setItem('detectionRange', detectionRangeSlider.value);
+    localStorage.setItem('fullTime', fullTimeSlider.value);
   }
 
   // Function to load slider values from localStorage
@@ -136,6 +139,10 @@ export function initScene() {
       detectionRangeSlider.value = localStorage.getItem('detectionRange');
       DETECTION_RANGE = parseFloat(detectionRangeSlider.value);
     }
+    if (localStorage.getItem('fullTime')) {
+      fullTimeSlider.value = localStorage.getItem('fullTime');
+      FULL_TIME = parseInt(fullTimeSlider.value);
+    }
   }
 
   // Load slider values from localStorage on page load
@@ -167,6 +174,10 @@ export function initScene() {
   });
   detectionRangeSlider.addEventListener('input', () => {
     DETECTION_RANGE = parseFloat(detectionRangeSlider.value);
+    saveSliderValues();
+  });
+  fullTimeSlider.addEventListener('input', () => {
+    FULL_TIME = parseInt(fullTimeSlider.value);
     saveSliderValues();
   });
 }

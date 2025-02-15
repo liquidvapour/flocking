@@ -21,6 +21,8 @@ export class Boid {
     );
     this.acceleration = new THREE.Vector3();
     this.state = "Flying"; // "Flying", "Descending", or "Eating"
+    this.fullTime = 0; // Time boid stays full after eating
+    this.isFull = false; // Track if the boid is full
 
     // Create a simple geometry to represent the boid (a cone pointing forward)
     const geom = new THREE.ConeGeometry(1, 4, 8);
@@ -58,10 +60,11 @@ export class Boid {
     let foodAttraction = new THREE.Vector3();
     const foodPos = context.foodPos;
     const distToFood = this.position.distanceTo(foodPos);
-    // apply a downward attraction toward the food (reduce altitude)
-    foodAttraction = foodPos.clone().sub(this.position);
-    foodAttraction.normalize();
-    foodAttraction.multiplyScalar(0.05);
+    if (!this.isFull) {
+      foodAttraction = foodPos.clone().sub(this.position);
+      foodAttraction.normalize();
+      foodAttraction.multiplyScalar(0.05);
+    }
 
     // Scare behavior: when active, add strong upward force
     let scareForce = new THREE.Vector3();
@@ -107,14 +110,20 @@ export class Boid {
     if (this.position.z < -BOUND || this.position.z > BOUND)
       this.velocity.z *= -1;
 
-    // Random chance to switch to "Descending" state if close to food
-    if (distToFood < this.DETECTION_RANGE && Math.random() < 0.05) { // Increase chance and range
+    // Random chance to switch to "Descending" state if close to food and not full
+    if (!this.isFull && distToFood < this.DETECTION_RANGE && Math.random() < 0.05) { // Increase chance and range
       this.state = "Descending";
       this.material.color.set(0xffa500); // Change color to amber when descending
     } else if (distToFood < this.DETECTION_RANGE) {
       this.material.color.set(0xffa500); // Change color to amber when near food
     } else {
       this.material.color.set(0x00ffcc); // Default color
+    }
+
+    // Check if fullness time has passed
+    if (this.isFull && Date.now() - this.fullStartTime > this.fullTime) {
+      this.isFull = false;
+      this.material.color.set(0x00ffcc); // Change color back to default
     }
   }
 
@@ -161,7 +170,10 @@ export class Boid {
     // Switch back to "Flying" state after a few seconds
     if (Date.now() - this.eatingStartTime > 3000) {
       this.state = "Flying";
-      this.material.color.set(0x00ffcc); // Change color back to default
+      this.isFull = true;
+      this.fullTime = context.fullTime + Math.random() * 2000; // Add random offset
+      this.fullStartTime = Date.now();
+      this.material.color.set(0x0000ff); // Change color to blue when full
     }
   }
 
