@@ -61,16 +61,12 @@ export class Boid {
 
     // Scare behavior: when active, add strong upward force
     let scareForce = new THREE.Vector3();
-    if (context.scareActive) {
-      scareForce.set(0, 1, 0);
-      scareForce.multiplyScalar(context.SCARE_FACTOR);
-    }
 
     // Maintain desired altitude
     let altitudeForce = new THREE.Vector3();
-    if (this.position.y < context.MIN_ALTITUDE) {
+    if (this.position.y < context.MIN_ALTITUDE - 5) {
       altitudeForce.set(0, 1, 0).multiplyScalar(0.1);
-    } else if (this.position.y > context.MIN_ALTITUDE) {
+    } else if (this.position.y > context.MIN_ALTITUDE + 5) {
       altitudeForce.set(0, -1, 0).multiplyScalar(0.1);
     }
 
