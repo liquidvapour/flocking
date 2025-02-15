@@ -2,17 +2,19 @@ import { Boid } from './boid.js';
 import { Ground } from './ground.js';
 
 let scene, camera, renderer, food, ground;
-let MAX_SPEED = 1.5;
-let MAX_FORCE = 0.03;
-let NEIGHBOR_DIST = 20;
-let DESIRED_SEPARATION = 5;
-let SCARE_FACTOR = 0.3;
-let MIN_ALTITUDE = 10;
-let DETECTION_RANGE = 100;
-let FULL_TIME = 3000; // Time boids stay full after eating
-const NUM_BOIDS = 50;
-const boids = [];
-let scareActive = false; // when true, boids add a strong upward force
+const context = {
+  MAX_SPEED: 1.5,
+  MAX_FORCE: 0.03,
+  NEIGHBOR_DIST: 20,
+  DESIRED_SEPARATION: 5,
+  SCARE_FACTOR: 0.3,
+  MIN_ALTITUDE: 10,
+  DETECTION_RANGE: 100,
+  FULL_TIME: 3000, // Time boids stay full after eating
+  NUM_BOIDS: 50,
+  boids: [],
+  scareActive: false // when true, boids add a strong upward force
+};
 
 export function initScene() {
   scene = new THREE.Scene();
@@ -57,15 +59,15 @@ export function initScene() {
   ground = new Ground(scene);
 
   // --- CREATE THE FLOCK ---
-  for (let i = 0; i < NUM_BOIDS; i++) {
-    boids.push(new Boid(scene, MAX_SPEED, MAX_FORCE, NEIGHBOR_DIST, DESIRED_SEPARATION, SCARE_FACTOR, MIN_ALTITUDE, DETECTION_RANGE));
+  for (let i = 0; i < context.NUM_BOIDS; i++) {
+    context.boids.push(new Boid(scene, context));
   }
 
   // On mouse click, trigger scare for a few seconds and add new food
   window.addEventListener("click", (event) => {
-    scareActive = true;
+    context.scareActive = true;
     setTimeout(() => {
-      scareActive = false;
+      context.scareActive = false;
     }, 3000);
 
     // Calculate mouse position in normalized device coordinates (-1 to +1)
@@ -113,35 +115,35 @@ export function initScene() {
   function loadSliderValues() {
     if (localStorage.getItem('maxSpeed')) {
       maxSpeedSlider.value = localStorage.getItem('maxSpeed');
-      MAX_SPEED = parseFloat(maxSpeedSlider.value);
+      context.MAX_SPEED = parseFloat(maxSpeedSlider.value);
     }
     if (localStorage.getItem('maxForce')) {
       maxForceSlider.value = localStorage.getItem('maxForce');
-      MAX_FORCE = parseFloat(maxForceSlider.value);
+      context.MAX_FORCE = parseFloat(maxForceSlider.value);
     }
     if (localStorage.getItem('neighborDist')) {
       neighborDistSlider.value = localStorage.getItem('neighborDist');
-      NEIGHBOR_DIST = parseFloat(neighborDistSlider.value);
+      context.NEIGHBOR_DIST = parseFloat(neighborDistSlider.value);
     }
     if (localStorage.getItem('desiredSeparation')) {
       desiredSeparationSlider.value = localStorage.getItem('desiredSeparation');
-      DESIRED_SEPARATION = parseFloat(desiredSeparationSlider.value);
+      context.DESIRED_SEPARATION = parseFloat(desiredSeparationSlider.value);
     }
     if (localStorage.getItem('scareFactor')) {
       scareFactorSlider.value = localStorage.getItem('scareFactor');
-      SCARE_FACTOR = parseFloat(scareFactorSlider.value);
+      context.SCARE_FACTOR = parseFloat(scareFactorSlider.value);
     }
     if (localStorage.getItem('minAltitude')) {
       minAltitudeSlider.value = localStorage.getItem('minAltitude');
-      MIN_ALTITUDE = parseFloat(minAltitudeSlider.value);
+      context.MIN_ALTITUDE = parseFloat(minAltitudeSlider.value);
     }
     if (localStorage.getItem('detectionRange')) {
       detectionRangeSlider.value = localStorage.getItem('detectionRange');
-      DETECTION_RANGE = parseFloat(detectionRangeSlider.value);
+      context.DETECTION_RANGE = parseFloat(detectionRangeSlider.value);
     }
     if (localStorage.getItem('fullTime')) {
       fullTimeSlider.value = localStorage.getItem('fullTime');
-      FULL_TIME = parseInt(fullTimeSlider.value);
+      context.FULL_TIME = parseInt(fullTimeSlider.value);
     }
   }
 
@@ -149,35 +151,35 @@ export function initScene() {
   loadSliderValues();
 
   maxSpeedSlider.addEventListener('input', () => {
-    MAX_SPEED = parseFloat(maxSpeedSlider.value);
+    context.MAX_SPEED = parseFloat(maxSpeedSlider.value);
     saveSliderValues();
   });
   maxForceSlider.addEventListener('input', () => {
-    MAX_FORCE = parseFloat(maxForceSlider.value);
+    context.MAX_FORCE = parseFloat(maxForceSlider.value);
     saveSliderValues();
   });
   neighborDistSlider.addEventListener('input', () => {
-    NEIGHBOR_DIST = parseFloat(neighborDistSlider.value);
+    context.NEIGHBOR_DIST = parseFloat(neighborDistSlider.value);
     saveSliderValues();
   });
   desiredSeparationSlider.addEventListener('input', () => {
-    DESIRED_SEPARATION = parseFloat(desiredSeparationSlider.value);
+    context.DESIRED_SEPARATION = parseFloat(desiredSeparationSlider.value);
     saveSliderValues();
   });
   scareFactorSlider.addEventListener('input', () => {
-    SCARE_FACTOR = parseFloat(scareFactorSlider.value);
+    context.SCARE_FACTOR = parseFloat(scareFactorSlider.value);
     saveSliderValues();
   });
   minAltitudeSlider.addEventListener('input', () => {
-    MIN_ALTITUDE = parseFloat(minAltitudeSlider.value);
+    context.MIN_ALTITUDE = parseFloat(minAltitudeSlider.value);
     saveSliderValues();
   });
   detectionRangeSlider.addEventListener('input', () => {
-    DETECTION_RANGE = parseFloat(detectionRangeSlider.value);
+    context.DETECTION_RANGE = parseFloat(detectionRangeSlider.value);
     saveSliderValues();
   });
   fullTimeSlider.addEventListener('input', () => {
-    FULL_TIME = parseInt(fullTimeSlider.value);
+    context.FULL_TIME = parseInt(fullTimeSlider.value);
     saveSliderValues();
   });
 }
@@ -185,8 +187,8 @@ export function initScene() {
 // --- ANIMATION LOOP ---
 export function animate() {
   requestAnimationFrame(animate);
-  let context = { foodPos: food.position, scareActive: scareActive };
+  context.foodPos = food.position;
   // Update each boid
-  boids.forEach(boid => boid.update(boids, context));
+  context.boids.forEach(boid => boid.update(context.boids, context));
   renderer.render(scene, camera);
 }

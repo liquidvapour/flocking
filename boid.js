@@ -1,12 +1,13 @@
 export class Boid {
-  constructor(scene, MAX_SPEED, MAX_FORCE, NEIGHBOR_DIST, DESIRED_SEPARATION, SCARE_FACTOR, MIN_ALTITUDE, DETECTION_RANGE) {
-    this.MAX_SPEED = MAX_SPEED;
-    this.MAX_FORCE = MAX_FORCE;
-    this.NEIGHBOR_DIST = NEIGHBOR_DIST;
-    this.DESIRED_SEPARATION = DESIRED_SEPARATION;
-    this.SCARE_FACTOR = SCARE_FACTOR;
-    this.MIN_ALTITUDE = MIN_ALTITUDE;
-    this.DETECTION_RANGE = DETECTION_RANGE;
+  constructor(scene, context) {
+    this.context = context;
+    this.MAX_SPEED = context.MAX_SPEED;
+    this.MAX_FORCE = context.MAX_FORCE;
+    this.NEIGHBOR_DIST = context.NEIGHBOR_DIST;
+    this.DESIRED_SEPARATION = context.DESIRED_SEPARATION;
+    this.SCARE_FACTOR = context.SCARE_FACTOR;
+    this.MIN_ALTITUDE = context.MIN_ALTITUDE;
+    this.DETECTION_RANGE = context.DETECTION_RANGE;
 
     // Position, velocity, acceleration as THREE.Vector3
     this.position = new THREE.Vector3(
