@@ -93,7 +93,7 @@
             (Math.random()-0.5)*2
           );
           this.acceleration = new THREE.Vector3();
-          this.state = "Flying"; // "Flying" or "Eating"
+          this.state = "Flying"; // "Flying", "Descending", or "Eating"
           
           // Create a simple geometry to represent the boid (a cone pointing forward)
           const geom = new THREE.ConeGeometry(1, 4, 8);
@@ -106,6 +106,8 @@
         update(boids, context) {
           if (this.state === "Flying") {
             this.flyingBehavior(boids, context);
+          } else if (this.state === "Descending") {
+            this.descendingBehavior(context);
           } else if (this.state === "Eating") {
             this.eatingBehavior(boids, context);
           }
@@ -180,15 +182,40 @@
           if (this.position.z < -BOUND || this.position.z > BOUND)
             this.velocity.z *= -1;
           
-          // Random chance to switch to "Eating" state if close to food
+          // Random chance to switch to "Descending" state if close to food
           if (distToFood < 10 && Math.random() < 0.05) { // Increase chance and range
-            this.state = "Eating";
-            this.eatingStartTime = Date.now();
-            this.material.color.set(0xff0000); // Change color to red when eating
+            this.state = "Descending";
+            this.material.color.set(0xffa500); // Change color to amber when descending
           } else if (distToFood < 10) {
             this.material.color.set(0xffa500); // Change color to amber when near food
           } else {
             this.material.color.set(0x00ffcc); // Default color
+          }
+        }
+        
+        // Descending behavior
+        descendingBehavior(context) {
+          const foodPos = context.foodPos;
+          const targetPos = foodPos.clone();
+          targetPos.y = 3; // Target position on the ground
+          
+          const desired = targetPos.clone().sub(this.position);
+          desired.normalize();
+          desired.multiplyScalar(MAX_SPEED);
+          const steer = desired.sub(this.velocity);
+          steer.clampLength(0, MAX_FORCE);
+          
+          this.acceleration.add(steer);
+          this.velocity.add(this.acceleration);
+          this.velocity.clampLength(0, MAX_SPEED);
+          this.position.add(this.velocity);
+          this.acceleration.set(0, 0, 0);
+          
+          // Switch to "Eating" state when close to the ground
+          if (this.position.distanceTo(targetPos) < 1) {
+            this.state = "Eating";
+            this.eatingStartTime = Date.now();
+            this.material.color.set(0xff0000); // Change color to red when eating
           }
         }
         
