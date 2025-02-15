@@ -109,7 +109,7 @@
         }
         
         // Main update method
-        update(boids) {
+        update(boids, context) {
           // Flocking behaviors
           const sep = this.separate(boids).multiplyScalar(1.5);
           const ali = this.align(boids);
@@ -117,7 +117,7 @@
           
           // Food attraction: if not feeding, and if food is below and not too far, move toward food
           let foodAttraction = new THREE.Vector3();
-          const foodPos = new THREE.Vector3(food.position.x, food.position.y, food.position.z);
+          const foodPos = context.foodPos; // new THREE.Vector3(food.position.x, food.position.y, food.position.z);
           const distToFood = this.position.distanceTo(foodPos);
           if (distToFood < 100 && this.position.y > 5) {
             // apply a downward attraction toward the food (reduce altitude)
@@ -252,15 +252,41 @@
         boids.push(new Boid());
       }
       
+      // Function to create a new food object
+      function createFood(position) {
+        //const foodGeometry = new THREE.SphereGeometry(3, 16, 16);
+        //const foodMaterial = new THREE.MeshLambertMaterial({ color: 0xffaa00 });
+        const newFood = new THREE.Mesh(foodGeometry, foodMaterial);
+        newFood.position.copy(position);
+        scene.add(newFood);
+      }
+
       // --- SCARE EVENT HANDLER ---
-      // On mouse click, trigger scare for a few seconds.
-      window.addEventListener("click", () => {
+      // On mouse click, trigger scare for a few seconds and add new food
+      window.addEventListener("click", (event) => {
         scareActive = true;
         setTimeout(() => {
           scareActive = false;
         }, 3000);
+
+        // Calculate mouse position in normalized device coordinates (-1 to +1)
+        const mouse = new THREE.Vector2(
+          (event.clientX / window.innerWidth) * 2 - 1,
+          -(event.clientY / window.innerHeight) * 2 + 1
+        );
+
+        // Use Raycaster to find intersection point on the plane
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObject(ground);
+
+        if (intersects.length > 0) {
+          const intersectPoint = intersects[0].point;
+          food.position.copy(intersectPoint);
+          //createFood(intersectPoint);
+        }
       });
-      
+
       // Update flocking parameters from sliders
       const maxSpeedSlider = document.getElementById('maxSpeed');
       const maxForceSlider = document.getElementById('maxForce');
@@ -328,8 +354,9 @@
       // --- ANIMATION LOOP ---
       function animate() {
         requestAnimationFrame(animate);
+        let context = { foodPos: food.position };
         // Update each boid
-        boids.forEach(boid => boid.update(boids));
+        boids.forEach(boid => boid.update(boids, context));
         scareActive = false;
         renderer.render(scene, camera);
       }
