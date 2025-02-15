@@ -24,7 +24,8 @@
       <label>Neighbor Distance: <input type="range" id="neighborDist" min="10" max="50" step="1" value="20"></label><br>
       <label>Desired Separation: <input type="range" id="desiredSeparation" min="1" max="20" step="1" value="5"></label><br>
       <label>Scare Factor: <input type="range" id="scareFactor" min="0.01" max="1" step="0.01" value="0.3"></label><br>
-      <label>Min Altitude: <input type="range" id="minAltitude" min="1" max="50" step="1" value="10"></label>
+      <label>Min Altitude: <input type="range" id="minAltitude" min="1" max="50" step="1" value="10"></label><br>
+      <label>Detection Range: <input type="range" id="detectionRange" min="10" max="200" step="10" value="100"></label>
     </div>
     <script>
       // --- SETUP SCENE, CAMERA, & RENDERER ---
@@ -73,6 +74,7 @@
       let DESIRED_SEPARATION = 5;
       let SCARE_FACTOR = 0.3;
       let MIN_ALTITUDE = 10;
+      let DETECTION_RANGE = 100;
       const NUM_BOIDS = 50;
       const boids = [];
       let scareActive = false; // when true, boids add a strong upward force
@@ -131,12 +133,10 @@
           let foodAttraction = new THREE.Vector3();
           const foodPos = context.foodPos;
           const distToFood = this.position.distanceTo(foodPos);
-          // if (distToFood < 50 && this.position.y > 5) { // Increase detection range
-            // apply a downward attraction toward the food (reduce altitude)
+          // apply a downward attraction toward the food (reduce altitude)
           foodAttraction = foodPos.clone().sub(this.position);
           foodAttraction.normalize();
           foodAttraction.multiplyScalar(0.05);
-//          }
           
           // Scare behavior: when active, add strong upward force
           let scareForce = new THREE.Vector3();
@@ -183,10 +183,10 @@
             this.velocity.z *= -1;
           
           // Random chance to switch to "Descending" state if close to food
-          if (distToFood < 10 && Math.random() < 0.05) { // Increase chance and range
+          if (distToFood < DETECTION_RANGE && Math.random() < 0.05) { // Increase chance and range
             this.state = "Descending";
             this.material.color.set(0xffa500); // Change color to amber when descending
-          } else if (distToFood < 10) {
+          } else if (distToFood < DETECTION_RANGE) {
             this.material.color.set(0xffa500); // Change color to amber when near food
           } else {
             this.material.color.set(0x00ffcc); // Default color
@@ -381,6 +381,7 @@
       const desiredSeparationSlider = document.getElementById('desiredSeparation');
       const scareFactorSlider = document.getElementById('scareFactor');
       const minAltitudeSlider = document.getElementById('minAltitude');
+      const detectionRangeSlider = document.getElementById('detectionRange');
 
       // Function to save slider values to localStorage
       function saveSliderValues() {
@@ -390,6 +391,7 @@
         localStorage.setItem('desiredSeparation', desiredSeparationSlider.value);
         localStorage.setItem('scareFactor', scareFactorSlider.value);
         localStorage.setItem('minAltitude', minAltitudeSlider.value);
+        localStorage.setItem('detectionRange', detectionRangeSlider.value);
       }
 
       // Function to load slider values from localStorage
@@ -418,6 +420,10 @@
           minAltitudeSlider.value = localStorage.getItem('minAltitude');
           MIN_ALTITUDE = parseFloat(minAltitudeSlider.value);
         }
+        if (localStorage.getItem('detectionRange')) {
+          detectionRangeSlider.value = localStorage.getItem('detectionRange');
+          DETECTION_RANGE = parseFloat(detectionRangeSlider.value);
+        }
       }
 
       // Load slider values from localStorage on page load
@@ -445,6 +451,10 @@
       });
       minAltitudeSlider.addEventListener('input', () => {
         MIN_ALTITUDE = parseFloat(minAltitudeSlider.value);
+        saveSliderValues();
+      });
+      detectionRangeSlider.addEventListener('input', () => {
+        DETECTION_RANGE = parseFloat(detectionRangeSlider.value);
         saveSliderValues();
       });
 
