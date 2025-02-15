@@ -15,6 +15,7 @@ export class Boid {
     this.state = "Flying"; // "Flying", "Descending", or "Eating"
     this.fullTime = 0; // Time boid stays full after eating
     this.isFull = false; // Track if the boid is full
+    this.desiredAltitude = 20; // Desired altitude between 20 and 30
 
     // Create a simple geometry to represent the boid (a cone pointing forward)
     const geom = new THREE.ConeGeometry(1, 4, 8);
@@ -65,11 +66,14 @@ export class Boid {
       scareForce.multiplyScalar(context.SCARE_FACTOR);
     }
 
-    // Maintain minimum altitude
+    // Maintain desired altitude
     let altitudeForce = new THREE.Vector3();
-    if (this.position.y < context.MIN_ALTITUDE) {
-      altitudeForce.set(0, 1, 0);
-      altitudeForce.multiplyScalar(0.1);
+    if (this.position.y < this.desiredAltitude) {
+      console.log("too high", this.position.y);
+      altitudeForce.set(0, 1, 0).multiplyScalar(0.1);
+    } else if (this.position.y > this.desiredAltitude) {
+      console.log("too low", this.position.y);
+      altitudeForce.set(0, -1, 0).multiplyScalar(0.1);
     }
 
     // Sum up all forces
