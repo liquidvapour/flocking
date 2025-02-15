@@ -107,7 +107,7 @@
           if (this.state === "Flying") {
             this.flyingBehavior(boids, context);
           } else if (this.state === "Eating") {
-            this.eatingBehavior(context);
+            this.eatingBehavior(boids, context);
           }
           
           // Update mesh position
@@ -180,19 +180,26 @@
           if (this.position.z < -BOUND || this.position.z > BOUND)
             this.velocity.z *= -1;
           
-          // Switch to "Eating" state if close to food
-          if (distToFood < 5) {
+          // Random chance to switch to "Eating" state if close to food
+          if (distToFood < 20 && Math.random() < 0.01) {
             this.state = "Eating";
             this.eatingStartTime = Date.now();
           }
         }
         
         // Eating behavior
-        eatingBehavior(context) {
+        eatingBehavior(boids, context) {
           // Stay near the food for a while
           const foodPos = context.foodPos;
           this.position.y = 3; // Stay on the ground
           this.velocity.set(0, 0, 0); // Stop moving
+          
+          // Maintain separation while eating
+          const sep = this.separate(boids).multiplyScalar(1.5);
+          this.acceleration.add(sep);
+          this.velocity.add(this.acceleration);
+          this.position.add(this.velocity);
+          this.acceleration.set(0, 0, 0);
           
           // Switch back to "Flying" state after a few seconds
           if (Date.now() - this.eatingStartTime > 3000) {
