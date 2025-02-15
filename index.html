@@ -268,20 +268,61 @@
       const desiredSeparationSlider = document.getElementById('desiredSeparation');
       const scareFactorSlider = document.getElementById('scareFactor');
 
+      // Function to save slider values to localStorage
+      function saveSliderValues() {
+        localStorage.setItem('maxSpeed', maxSpeedSlider.value);
+        localStorage.setItem('maxForce', maxForceSlider.value);
+        localStorage.setItem('neighborDist', neighborDistSlider.value);
+        localStorage.setItem('desiredSeparation', desiredSeparationSlider.value);
+        localStorage.setItem('scareFactor', scareFactorSlider.value);
+      }
+
+      // Function to load slider values from localStorage
+      function loadSliderValues() {
+        if (localStorage.getItem('maxSpeed')) {
+          maxSpeedSlider.value = localStorage.getItem('maxSpeed');
+          MAX_SPEED = parseFloat(maxSpeedSlider.value);
+        }
+        if (localStorage.getItem('maxForce')) {
+          maxForceSlider.value = localStorage.getItem('maxForce');
+          MAX_FORCE = parseFloat(maxForceSlider.value);
+        }
+        if (localStorage.getItem('neighborDist')) {
+          neighborDistSlider.value = localStorage.getItem('neighborDist');
+          NEIGHBOR_DIST = parseFloat(neighborDistSlider.value);
+        }
+        if (localStorage.getItem('desiredSeparation')) {
+          desiredSeparationSlider.value = localStorage.getItem('desiredSeparation');
+          DESIRED_SEPARATION = parseFloat(desiredSeparationSlider.value);
+        }
+        if (localStorage.getItem('scareFactor')) {
+          scareFactorSlider.value = localStorage.getItem('scareFactor');
+          SCARE_FACTOR = parseFloat(scareFactorSlider.value);
+        }
+      }
+
+      // Load slider values from localStorage on page load
+      loadSliderValues();
+
       maxSpeedSlider.addEventListener('input', () => {
         MAX_SPEED = parseFloat(maxSpeedSlider.value);
+        saveSliderValues();
       });
       maxForceSlider.addEventListener('input', () => {
         MAX_FORCE = parseFloat(maxForceSlider.value);
+        saveSliderValues();
       });
       neighborDistSlider.addEventListener('input', () => {
         NEIGHBOR_DIST = parseFloat(neighborDistSlider.value);
+        saveSliderValues();
       });
       desiredSeparationSlider.addEventListener('input', () => {
         DESIRED_SEPARATION = parseFloat(desiredSeparationSlider.value);
+        saveSliderValues();
       });
       scareFactorSlider.addEventListener('input', () => {
         SCARE_FACTOR = parseFloat(scareFactorSlider.value);
+        saveSliderValues();
       });
 
       // --- ANIMATION LOOP ---
@@ -289,6 +330,7 @@
         requestAnimationFrame(animate);
         // Update each boid
         boids.forEach(boid => boid.update(boids));
+        scareActive = false;
         renderer.render(scene, camera);
       }
       
