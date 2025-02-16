@@ -149,11 +149,19 @@ export class Boid {
 
     this.velocity.add(this.acceleration);
     this.velocity.clampLength(0, context.MAX_SPEED);
+
+    // Slow down when near the food based on distance
+    const distToFood = this.position.distanceTo(targetPos);
+    if (distToFood < 10) { // Adjust the distance threshold as needed
+      const speedReductionFactor = Math.max(distToFood / 10, 0.75); // Linearly reduce speed based on distance
+      this.velocity.multiplyScalar(speedReductionFactor);
+    }
+
     this.position.add(this.velocity);
     this.acceleration.set(0, 0, 0);
 
     // Switch to "Eating" state when close to the ground
-    if (this.position.distanceTo(targetPos) < 1) {
+    if (this.position.distanceTo(targetPos) < 3) {
       this.state = "Eating";
       this.eatingStartTime = Date.now();
       this.material.color.set(0xff0000); // Change color to red when eating
