@@ -174,7 +174,11 @@ export class Boid {
     this.position.add(this.velocity);
     this.acceleration.set(0, 0, 0);
 
-    context.food.eat();
+    if (context.food.eat()) {
+      // Scale the boid mesh a little on each successful eat
+      const scaleFactor = 1.005; // Increase size by 10%
+      this.mesh.scale.multiplyScalar(scaleFactor);
+    }
     // Switch back to "Flying" state after a few seconds
     if (!context.food.getIsAnyFoodLeft()) {
       this.state = "Flying";

@@ -32,10 +32,12 @@ export class Food {
 
   eat() {
     this.quantity -= 1;
-    this.updateScale();
     if (this.quantity <= 0) {
       this.hide(); // Hide the food when fully consumed
+      return false;
     }
+    this.updateScale();
+    return true;
   }
 
   getIsAnyFoodLeft() {
