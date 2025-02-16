@@ -51,9 +51,9 @@ export class Boid {
 
     // Food attraction: if not feeding, and if food is below and not too far, move toward food
     let foodAttraction = new THREE.Vector3();
-    const foodPos = context.foodPos;
+    const foodPos = context.food?.position ?? new THREE.Vector3();
     const distToFood = this.position.distanceTo(foodPos);
-    if (!this.isFull) {
+    if (!this.isFull || context.food.getIsAnyFoodLeft()) {
       foodAttraction = foodPos.clone().sub(this.position);
       foodAttraction.normalize();
       foodAttraction.multiplyScalar(0.05);
@@ -166,6 +166,10 @@ export class Boid {
       this.fullTime = context.FULL_TIME + Math.random() * 2000; // Add random offset
       this.fullStartTime = Date.now();
       this.material.color.set(0x0000ff); // Change color to blue when full
+
+      // Make the food disappear
+      context.foodVisible = false;
+      context.food.hide();
     }
   }
 

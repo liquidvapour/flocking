@@ -83,8 +83,6 @@ export function initScene() {
       const normal = ground.getNormal();
       intersectPoint.add(normal.multiplyScalar(3)); // Place food above the ground
       context.food.setPosition(intersectPoint);
-      context.food.show(); // Make food visible again
-      context.foodVisible = true;
     }
   });
 
@@ -186,9 +184,6 @@ export function initScene() {
 // --- ANIMATION LOOP ---
 export function animate() {
   requestAnimationFrame(animate);
-  if (context.foodVisible) {
-    context.foodPos = context.food.getPosition();
-  }
   // Update each boid
   context.boids.forEach(boid => boid.update(context.boids, context));
   renderer.render(scene, camera);
