@@ -15,6 +15,7 @@ export class Food {
     this.mesh.position.copy(position);
     this.quantity = FOOD_AMOUNT;
     this.show();
+    this.updateScale();
   }
 
   hide() {
@@ -31,6 +32,7 @@ export class Food {
 
   eat() {
     this.quantity -= 1;
+    this.updateScale();
     if (this.quantity <= 0) {
       this.hide(); // Hide the food when fully consumed
     }
@@ -38,5 +40,10 @@ export class Food {
 
   getIsAnyFoodLeft() {
     return this.quantity > 0;
+  }
+
+  updateScale() {
+    const scale = this.quantity / FOOD_AMOUNT;
+    this.mesh.scale.set(scale, scale, scale);
   }
 }
