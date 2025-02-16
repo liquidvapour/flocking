@@ -29,7 +29,7 @@ export class Boid {
     if (this.state === "Flying") {
       this.flyingBehavior(boids, context);
     } else if (this.state === "Descending") {
-      this.descendingBehavior(context);
+      this.descendingBehavior(boids, context);
     } else if (this.state === "Eating") {
       this.eatingBehavior(boids, context);
     }
@@ -53,7 +53,8 @@ export class Boid {
     let foodAttraction = new THREE.Vector3();
     const foodPos = context.food?.position ?? new THREE.Vector3();
     const distToFood = this.position.distanceTo(foodPos);
-    if (!this.isFull || context.food.getIsAnyFoodLeft()) {
+    const isAnyFoodLeft =context.food.getIsAnyFoodLeft();
+    if (!this.isFull && isAnyFoodLeft) {
       foodAttraction = foodPos.clone().sub(this.position);
       foodAttraction.normalize();
       foodAttraction.multiplyScalar(0.05);
@@ -118,7 +119,16 @@ export class Boid {
   }
 
   // Descending behavior
-  descendingBehavior(context) {
+  descendingBehavior(boids, context) {
+    if (!context.food.getIsAnyFoodLeft()) {
+      this.state = "Flying";
+      return;
+    }
+   
+    const sep = this.separate(boids, context).multiplyScalar(1.5);
+    const ali = this.align(boids, context);
+    const coh = this.cohesion(boids, context);
+    
     const targetPos = context.food.getIsAnyFoodLeft() 
       ? context.food.getPosition() 
       : new THREE.Vector3();
@@ -130,7 +140,11 @@ export class Boid {
     const steer = desired.sub(this.velocity);
     steer.clampLength(0, context.MAX_FORCE);
 
+    this.acceleration.add(sep);
+    this.acceleration.add(ali);
+    this.acceleration.add(coh);
     this.acceleration.add(steer);
+
     this.velocity.add(this.acceleration);
     this.velocity.clampLength(0, context.MAX_SPEED);
     this.position.add(this.velocity);
@@ -166,10 +180,6 @@ export class Boid {
       this.fullTime = context.FULL_TIME + Math.random() * 2000; // Add random offset
       this.fullStartTime = Date.now();
       this.material.color.set(0x0000ff); // Change color to blue when full
-
-      // Make the food disappear
-      context.foodVisible = false;
-      context.food.hide();
     }
   }
 

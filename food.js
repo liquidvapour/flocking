@@ -1,3 +1,5 @@
+const FOOD_AMOUNT = 1000;
+
 export class Food {
   constructor(scene) {
     const foodGeometry = new THREE.SphereGeometry(3, 16, 16);
@@ -6,12 +8,12 @@ export class Food {
     this.mesh.position.set((Math.random() - 0.5) * 200, 3, (Math.random() - 0.5) * 200);
     scene.add(this.mesh);
 
-    this.quantity = 100;
+    this.quantity = FOOD_AMOUNT;
   }
 
   setPosition(position) {
     this.mesh.position.copy(position);
-    this.quantity = 100;
+    this.quantity = FOOD_AMOUNT;
     this.show();
   }
 
