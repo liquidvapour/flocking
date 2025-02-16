@@ -66,12 +66,6 @@ export class Boid {
     let scareForce = new THREE.Vector3();
 
     // Maintain desired altitude
-    let altitudeForce = new THREE.Vector3();
-    if (this.position.y < context.MIN_ALTITUDE - VERTICAL_MARGIN) {
-      altitudeForce.set(0, 1, 0).multiplyScalar(0.1);
-    } else if (this.position.y > context.MIN_ALTITUDE + VERTICAL_MARGIN) {
-      altitudeForce.set(0, -1, 0).multiplyScalar(0.1);
-    }
 
     // Sum up all forces
     this.acceleration.add(sep);
@@ -79,7 +73,7 @@ export class Boid {
     this.acceleration.add(coh);
     this.acceleration.add(foodAttraction);
     this.acceleration.add(scareForce);
-    this.acceleration.add(altitudeForce);
+    this.acceleration.add(this.getAltitudeForce(context));
 
     // Update velocity and position
     this.velocity.add(this.acceleration);
@@ -120,6 +114,16 @@ export class Boid {
     }
   }
 
+  getAltitudeForce(context) {
+    let altitudeForce = new THREE.Vector3();
+    if (this.position.y < context.MIN_ALTITUDE - VERTICAL_MARGIN) {
+      altitudeForce.set(0, 1, 0).multiplyScalar(0.1);
+    } else if (this.position.y > context.MIN_ALTITUDE + VERTICAL_MARGIN) {
+      altitudeForce.set(0, -1, 0).multiplyScalar(0.1);
+    }
+    return altitudeForce;
+  }
+
   // Descending behavior
   descendingBehavior(boids, context) {
     if (!context.food.getIsAnyFoodLeft()) {
@@ -146,6 +150,7 @@ export class Boid {
     this.acceleration.add(ali);
     this.acceleration.add(coh);
     this.acceleration.add(steer);
+    this.acceleration.add(this.getAltitudeForce(context));
 
     this.velocity.add(this.acceleration);
     this.velocity.clampLength(0, context.MAX_SPEED);
