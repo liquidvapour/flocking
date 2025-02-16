@@ -1,4 +1,4 @@
-const VERTICAL_MARGIN = 30;
+const VERTICAL_MARGIN = 60;
 
 export class Boid {
   constructor(scene) {
@@ -53,7 +53,7 @@ export class Boid {
 
     // Food attraction: if not feeding, and if food is below and not too far, move toward food
     let foodAttraction = new THREE.Vector3();
-    const foodPos = context.food?.position ?? new THREE.Vector3();
+    const foodPos = context.food?.getPosition() ?? new THREE.Vector3();
     const distToFood = this.position.distanceTo(foodPos);
     const isAnyFoodLeft = context.food.getIsAnyFoodLeft();
     if (!this.isFull && isAnyFoodLeft) {
@@ -106,7 +106,7 @@ export class Boid {
     // Random chance to switch to "Descending" state if close to food and not full
     if (!this.isFull && distToFood < context.DETECTION_RANGE && Math.random() < 0.05) { // Increase chance and range
       this.state = "Descending";
-      this.material.color.set(0xffa500); // Change color to amber when descending
+      this.material.color.set(0xffa5aa); // Change color to amber when descending
     } else if (distToFood < context.DETECTION_RANGE) {
       this.material.color.set(0xffa500); // Change color to amber when near food
     } else {

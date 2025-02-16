@@ -12,7 +12,7 @@ const context = {
   MIN_ALTITUDE: 10,
   DETECTION_RANGE: 100,
   FULL_TIME: 3000, // Time boids stay full after eating
-  NUM_BOIDS: 50,
+  NUM_BOIDS: 300,
   boids: [],
   scareActive: false, // when true, boids add a strong upward force
   foodVisible: true // Track food visibility
@@ -28,7 +28,7 @@ export function initScene() {
     0.1,
     1000
   );
-  camera.position.set(0, 50, 100);
+  camera.position.set(0, 75, 350);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -81,7 +81,7 @@ export function initScene() {
     if (intersects.length > 0) {
       const intersectPoint = intersects[0].point;
       const normal = ground.getNormal();
-      intersectPoint.add(normal.multiplyScalar(3)); // Place food above the ground
+      intersectPoint.add(normal.multiplyScalar(5)); // Place food above the ground
       context.food.setPosition(intersectPoint);
     }
   });
