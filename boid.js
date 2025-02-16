@@ -51,16 +51,7 @@ export class Boid {
     const ali = this.align(boids, context);
     const coh = this.cohesion(boids, context);
 
-    // Food attraction: if not feeding, and if food is below and not too far, move toward food
-    let foodAttraction = new THREE.Vector3();
-    const foodPos = context.food?.getPosition() ?? new THREE.Vector3();
-    const distToFood = this.position.distanceTo(foodPos);
-    const isAnyFoodLeft = context.food.getIsAnyFoodLeft();
-    if (!this.isFull && isAnyFoodLeft) {
-      foodAttraction = foodPos.clone().sub(this.position);
-      foodAttraction.normalize();
-      foodAttraction.multiplyScalar(0.05);
-    }
+    let foodAttraction = this.getFoodAttraction(context);
 
     // Scare behavior: when active, add strong upward force
     let scareForce = new THREE.Vector3();
@@ -99,8 +90,10 @@ export class Boid {
     if (this.position.z < -BOUND || this.position.z > BOUND)
       this.velocity.z *= -1;
 
+    const distToFood = this.position.distanceTo(context.food.getPosition());
+
     // Random chance to switch to "Descending" state if close to food and not full
-    if (!this.isFull && distToFood < context.DETECTION_RANGE && Math.random() < 0.05) { // Increase chance and range
+    if (!this.isFull && context.food.getIsAnyFoodLeft() && distToFood < context.DETECTION_RANGE) { // Increase chance and range
       this.state = "Descending";
       this.material.color.set(0xffa5aa); // Change color to amber when descending
     } else if (distToFood < context.DETECTION_RANGE) {
@@ -114,6 +107,18 @@ export class Boid {
       this.isFull = false;
       this.material.color.set(0x00ffcc); // Change color back to default
     }
+  }
+
+  getFoodAttraction(context) {
+    let foodAttraction = new THREE.Vector3();
+    const foodPos = context.food?.getPosition().clone() ?? new THREE.Vector3();
+    const isAnyFoodLeft = context.food.getIsAnyFoodLeft();
+    if (!this.isFull && isAnyFoodLeft) {
+      foodAttraction = foodPos.sub(this.position);
+      foodAttraction.normalize();
+      foodAttraction.multiplyScalar(0.05);
+    }
+    return foodAttraction;
   }
 
   getAltitudeForce(minAltitude, maxAltitude) {
@@ -137,28 +142,21 @@ export class Boid {
     const ali = this.align(boids, context);
     const coh = this.cohesion(boids, context);
 
-    const targetPos = context.food.getIsAnyFoodLeft()
-      ? context.food.getPosition()
-      : new THREE.Vector3();
-
-    const desired = targetPos.clone().sub(this.position);
-    desired.normalize();
-    desired.multiplyScalar(context.MAX_SPEED);
-    const steer = desired.sub(this.velocity);
-    steer.clampLength(0, context.MAX_FORCE);
+    let foodAttraction = this.getFoodAttraction(context);
 
     this.acceleration.add(sep);
     this.acceleration.add(ali);
     this.acceleration.add(coh);
-    this.acceleration.add(steer);
+    this.acceleration.add(foodAttraction);
     this.acceleration.add(this.getAltitudeForce(0, 100));
 
     this.velocity.add(this.acceleration);
     this.velocity.clampLength(0, context.MAX_SPEED);
 
+    const targetPos = context.food.getPosition();
     // Slow down when near the food based on distance
     const distToFood = this.position.distanceTo(targetPos);
-    if (distToFood < 10) { // Adjust the distance threshold as needed
+    if (context.food.getIsAnyFoodLeft && distToFood < 10) { // Adjust the distance threshold as needed
       const speedReductionFactor = Math.max(distToFood / 10, 0.75); // Linearly reduce speed based on distance
       this.velocity.multiplyScalar(speedReductionFactor);
     }
@@ -179,9 +177,14 @@ export class Boid {
     // Stay near the food for a while
     const foodPos = context.food.getPosition();
 
-    // Maintain separation while eating
+    let foodAttraction = this.getFoodAttraction(context);
+
+      // Maintain separation while eating
     const sep = this.separate(boids, context).multiplyScalar(1.5);
     this.acceleration.add(sep);
+    this.acceleration.add(foodAttraction);
+
+
     this.velocity.add(this.acceleration);
     this.position.add(this.velocity);
     this.acceleration.set(0, 0, 0);
