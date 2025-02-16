@@ -1,7 +1,8 @@
 import { Boid } from './boid.js';
 import { Ground } from './ground.js';
+import { Food } from './food.js';
 
-let scene, camera, renderer, food, ground;
+let scene, camera, renderer, ground;
 const context = {
   MAX_SPEED: 1.5,
   MAX_FORCE: 0.03,
@@ -13,7 +14,8 @@ const context = {
   FULL_TIME: 3000, // Time boids stay full after eating
   NUM_BOIDS: 50,
   boids: [],
-  scareActive: false // when true, boids add a strong upward force
+  scareActive: false, // when true, boids add a strong upward force
+  foodVisible: true // Track food visibility
 };
 
 export function initScene() {
@@ -47,13 +49,8 @@ export function initScene() {
   directionalLight.position.set(50, 100, 50);
   scene.add(directionalLight);
 
-  // --- ADD A FOOD OBJECT ON THE GROUND ---
-  const foodGeometry = new THREE.SphereGeometry(3, 16, 16);
-  const foodMaterial = new THREE.MeshLambertMaterial({ color: 0xffaa00 });
-  food = new THREE.Mesh(foodGeometry, foodMaterial);
-  // Place food at a random ground position
-  food.position.set((Math.random() - 0.5) * 200, 3, (Math.random() - 0.5) * 200);
-  scene.add(food);
+  // Create food instance
+  context.food = new Food(scene);
 
   // Create ground instance
   ground = new Ground(scene);
@@ -85,7 +82,9 @@ export function initScene() {
       const intersectPoint = intersects[0].point;
       const normal = ground.getNormal();
       intersectPoint.add(normal.multiplyScalar(3)); // Place food above the ground
-      food.position.copy(intersectPoint);
+      context.food.setPosition(intersectPoint);
+      context.food.show(); // Make food visible again
+      context.foodVisible = true;
     }
   });
 
@@ -187,7 +186,9 @@ export function initScene() {
 // --- ANIMATION LOOP ---
 export function animate() {
   requestAnimationFrame(animate);
-  context.foodPos = food.position;
+  if (context.foodVisible) {
+    context.foodPos = context.food.getPosition();
+  }
   // Update each boid
   context.boids.forEach(boid => boid.update(context.boids, context));
   renderer.render(scene, camera);

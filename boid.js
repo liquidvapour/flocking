@@ -119,8 +119,9 @@ export class Boid {
 
   // Descending behavior
   descendingBehavior(context) {
-    const foodPos = context.foodPos;
-    const targetPos = foodPos.clone();
+    const targetPos = context.food.getIsAnyFoodLeft() 
+      ? context.food.getPosition() 
+      : new THREE.Vector3();
     targetPos.y = 3; // Target position on the ground
 
     const desired = targetPos.clone().sub(this.position);
@@ -146,7 +147,7 @@ export class Boid {
   // Eating behavior
   eatingBehavior(boids, context) {
     // Stay near the food for a while
-    const foodPos = context.foodPos;
+    const foodPos = context.food.getPosition();
     this.position.y = 3; // Stay on the ground
     this.velocity.set(0, 0, 0); // Stop moving
 
@@ -157,13 +158,18 @@ export class Boid {
     this.position.add(this.velocity);
     this.acceleration.set(0, 0, 0);
 
+    context.food.eat();
     // Switch back to "Flying" state after a few seconds
-    if (Date.now() - this.eatingStartTime > 3000) {
+    if (!context.food.getIsAnyFoodLeft()) {
       this.state = "Flying";
       this.isFull = true;
       this.fullTime = context.FULL_TIME + Math.random() * 2000; // Add random offset
       this.fullStartTime = Date.now();
       this.material.color.set(0x0000ff); // Change color to blue when full
+
+      // Make the food disappear
+      context.foodVisible = false;
+      context.food.hide();
     }
   }
 
