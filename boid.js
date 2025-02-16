@@ -140,7 +140,6 @@ export class Boid {
     const targetPos = context.food.getIsAnyFoodLeft()
       ? context.food.getPosition()
       : new THREE.Vector3();
-    targetPos.y = 3; // Target position on the ground
 
     const desired = targetPos.clone().sub(this.position);
     desired.normalize();
@@ -179,8 +178,6 @@ export class Boid {
   eatingBehavior(boids, context) {
     // Stay near the food for a while
     const foodPos = context.food.getPosition();
-    this.position.y = 3; // Stay on the ground
-    this.velocity.set(0, 0, 0); // Stop moving
 
     // Maintain separation while eating
     const sep = this.separate(boids, context).multiplyScalar(1.5);
@@ -189,13 +186,13 @@ export class Boid {
     this.position.add(this.velocity);
     this.acceleration.set(0, 0, 0);
 
-    if (context.food.eat()) {
+    const distToFood = this.position.distanceTo(foodPos);
+
+    if (distToFood < 3 && context.food.eat()) {
       // Scale the boid mesh a little on each successful eat
       const scaleFactor = 1.005; // Increase size by 10%
       this.mesh.scale.multiplyScalar(scaleFactor);
-    }
-    // Switch back to "Flying" state after a few seconds
-    if (!context.food.getIsAnyFoodLeft()) {
+    } else {
       this.state = "Flying";
       this.isFull = true;
       this.fullAtTime = Date.now() + context.FULL_TIME + Math.random() * 2000; // Set the time when the boid will no longer be full
