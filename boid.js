@@ -13,8 +13,8 @@ export class Boid {
     );
     this.acceleration = new THREE.Vector3();
     this.state = "Flying"; // "Flying", "Descending", or "Eating"
-    this.fullTime = 0; // Time boid stays full after eating
     this.isFull = false; // Track if the boid is full
+    this.fullAtTime = 0; // Time when the boid will no longer be full
     this.desiredAltitude = 20; // Desired altitude between 20 and 30
 
     // Create a simple geometry to represent the boid (a cone pointing forward)
@@ -53,7 +53,7 @@ export class Boid {
     let foodAttraction = new THREE.Vector3();
     const foodPos = context.food?.position ?? new THREE.Vector3();
     const distToFood = this.position.distanceTo(foodPos);
-    const isAnyFoodLeft =context.food.getIsAnyFoodLeft();
+    const isAnyFoodLeft = context.food.getIsAnyFoodLeft();
     if (!this.isFull && isAnyFoodLeft) {
       foodAttraction = foodPos.clone().sub(this.position);
       foodAttraction.normalize();
@@ -112,7 +112,7 @@ export class Boid {
     }
 
     // Check if fullness time has passed
-    if (this.isFull && Date.now() - this.fullStartTime > this.fullTime) {
+    if (this.isFull && Date.now() > this.fullAtTime) {
       this.isFull = false;
       this.material.color.set(0x00ffcc); // Change color back to default
     }
@@ -124,13 +124,13 @@ export class Boid {
       this.state = "Flying";
       return;
     }
-   
+
     const sep = this.separate(boids, context).multiplyScalar(1.5);
     const ali = this.align(boids, context);
     const coh = this.cohesion(boids, context);
-    
-    const targetPos = context.food.getIsAnyFoodLeft() 
-      ? context.food.getPosition() 
+
+    const targetPos = context.food.getIsAnyFoodLeft()
+      ? context.food.getPosition()
       : new THREE.Vector3();
     targetPos.y = 3; // Target position on the ground
 
@@ -177,8 +177,7 @@ export class Boid {
     if (!context.food.getIsAnyFoodLeft()) {
       this.state = "Flying";
       this.isFull = true;
-      this.fullTime = context.FULL_TIME + Math.random() * 2000; // Add random offset
-      this.fullStartTime = Date.now();
+      this.fullAtTime = Date.now() + context.FULL_TIME + Math.random() * 2000; // Set the time when the boid will no longer be full
       this.material.color.set(0x0000ff); // Change color to blue when full
     }
   }
