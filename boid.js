@@ -1,3 +1,5 @@
+const VERTICAL_MARGIN = 30;
+
 export class Boid {
   constructor(scene) {
     // Position, velocity, acceleration as THREE.Vector3
@@ -65,9 +67,9 @@ export class Boid {
 
     // Maintain desired altitude
     let altitudeForce = new THREE.Vector3();
-    if (this.position.y < context.MIN_ALTITUDE - 15) {
+    if (this.position.y < context.MIN_ALTITUDE - VERTICAL_MARGIN) {
       altitudeForce.set(0, 1, 0).multiplyScalar(0.1);
-    } else if (this.position.y > context.MIN_ALTITUDE + 15) {
+    } else if (this.position.y > context.MIN_ALTITUDE + VERTICAL_MARGIN) {
       altitudeForce.set(0, -1, 0).multiplyScalar(0.1);
     }
 
