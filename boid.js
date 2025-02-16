@@ -166,10 +166,6 @@ export class Boid {
       this.fullTime = context.FULL_TIME + Math.random() * 2000; // Add random offset
       this.fullStartTime = Date.now();
       this.material.color.set(0x0000ff); // Change color to blue when full
-
-      // Make the food disappear
-      context.foodVisible = false;
-      context.food.hide();
     }
   }
 

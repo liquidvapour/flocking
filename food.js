@@ -11,6 +11,8 @@ export class Food {
 
   setPosition(position) {
     this.mesh.position.copy(position);
+    this.quantity = 100;
+    this.show();
   }
 
   hide() {
@@ -27,6 +29,9 @@ export class Food {
 
   eat() {
     this.quantity -= 1;
+    if (this.quantity <= 0) {
+      this.hide(); // Hide the food when fully consumed
+    }
   }
 
   getIsAnyFoodLeft() {
