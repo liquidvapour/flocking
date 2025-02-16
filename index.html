@@ -29,9 +29,9 @@
       <label>Full Time: <input type="range" id="fullTime" min="500" max="50000" step="500" value="1000"></label><br>
     </div>
     <script type="module">
-      import { Boid } from './boid.js';
-      import { Ground } from './ground.js';
-      import { initScene, animate } from './main.js';
+      import { Boid } from './boid.js?v=${Date.now()}';
+      import { Ground } from './ground.js?v=${Date.now()}';
+      import { initScene, animate } from './main.js?v=${Date.now()}';
 
       // Initialize the scene
       initScene();
