@@ -134,6 +134,66 @@ export class Boid {
   // Descending behavior
   descendingBehavior(boids, context) {
     if (!context.food.getIsAnyFoodLeft()) {
+    if (context.scareActive && this.position.y < context.MIN_ALTITUDE - VERTICAL_MARGIN) {
+      // Calculate mouse position in normalized device coordinates (-1 to +1)
+      const mouse = new THREE.Vector2(
+        (event.clientX / window.innerWidth) * 2 - 1,
+        -(event.clientY / window.innerHeight) * 2 + 1
+      );
+
+      // Use Raycaster to find intersection point on the plane
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObject(ground.mesh);
+
+      if (intersects.length > 0) {
+        const intersectPoint = intersects[0].point;
+        const normal = ground.getNormal();
+        intersectPoint.add(normal.multiplyScalar(100)); // Place food above the ground
+        context.food.setPosition(intersectPoint);
+      }
+    }
+
+    // Update flocking parameters from sliders
+    maxSpeedSlider.addEventListener('input', () => {
+      context.MAX_SPEED = parseFloat(maxSpeedSlider.value);
+      saveSliderValues();
+    });
+
+    maxForceSlider.addEventListener('input', () => {
+      context.MAX_FORCE = parseFloat(maxForceSlider.value);
+      saveSliderValues();
+    });
+
+    neighborDistSlider.addEventListener('input', () => {
+      context.NEIGHBOR_DIST = parseFloat(neighborDistSlider.value);
+      saveSliderValues();
+    });
+
+    desiredSeparationSlider.addEventListener('input', () => {
+      context.DESIRED_SEPARATION = parseFloat(desiredSeparationSlider.value);
+      saveSliderValues();
+    });
+
+    scareFactorSlider.addEventListener('input', () => {
+      context.SCARE_FACTOR = parseFloat(scareFactorSlider.value);
+      saveSliderValues();
+    });
+
+    minAltitudeSlider.addEventListener('input', () => {
+      context.MIN_ALTITUDE = parseFloat(minAltitudeSlider.value);
+      saveSliderValues();
+    });
+
+    detectionRangeSlider.addEventListener('input', () => {
+      context.DETECTION_RANGE = parseFloat(detectionRangeSlider.value);
+      saveSliderValues();
+    });
+
+    fullTimeSlider.addEventListener('input', () => {
+      context.FULL_TIME = parseInt(fullTimeSlider.value);
+      saveSliderValues();
+    });
       this.state = "Flying";
       return;
     }
