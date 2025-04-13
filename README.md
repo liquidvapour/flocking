@@ -30,6 +30,12 @@ This project is a 3D simulation of flocking behavior, built using the Three.js l
 
 2. Open the simulation in your browser at `http://localhost:8080` (or the port specified by your server).
 
+## Live Demo
+
+You can view the live demo of the simulation here: [Flocking Simulation on GitHub Pages](https://liquidvapour.github.io/<repository-name>/)
+
+Replace `<your-github-username>` with your GitHub username and `<repository-name>` with the name of your repository.
+
 ## File Structure
 - `boid.js`: Defines the behavior and properties of boids.
 - `food.js`: Manages food objects, including their position, visibility, and interaction with boids.
