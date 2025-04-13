@@ -1,3 +1,9 @@
+/**
+ * Main entry point for the flocking simulation.
+ * Initializes the Three.js scene, camera, renderer, and other components.
+ * Handles the animation loop and user interactions.
+ */
+
 import { Boid } from './boid.js';
 import { Ground } from './ground.js';
 import { Food } from './food.js';

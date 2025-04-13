@@ -1,3 +1,7 @@
+/**
+ * Ground class represents the ground plane in the simulation.
+ * It provides a visual base for the 3D environment.
+ */
 export class Ground {
   constructor(scene) {
     const groundGeo = new THREE.PlaneGeometry(500, 500);

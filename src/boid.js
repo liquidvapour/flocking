@@ -1,5 +1,10 @@
 const VERTICAL_MARGIN = 60;
 
+/**
+ * Boid class represents an individual agent in the flocking simulation.
+ * Each boid has properties like position, velocity, and acceleration.
+ * It also contains methods to update its behavior based on flocking rules.
+ */
 export class Boid {
   constructor(scene) {
     // Position, velocity, acceleration as THREE.Vector3

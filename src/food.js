@@ -1,3 +1,7 @@
+/**
+ * Food class represents food objects in the simulation.
+ * Each food object has a 3D mesh and can interact with boids.
+ */
 const FOOD_AMOUNT = 1000;
 
 export class Food {
