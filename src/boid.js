@@ -33,16 +33,16 @@ export class Boid {
 
   // Main update method
   update(boids, context) {
-    // Precompute distances to other boids
-    const distances = new Map();
-    for (let other of boids) {
-      distances.set(other, this.position.distanceTo(other.position));
+    // Precompute distances to other boids and store in an array
+    const distances = [];
+    for (let i = 0; i < boids.length; i++) {
+      distances[i] = this.position.distanceTo(boids[i].position);
     }
-    
+
     if (this.state === "Flying") {
       this.flyingBehavior(boids, context, distances);
     } else if (this.state === "Descending") {
-      this.descendingBehavior(boids, context, distances);
+      this.descendingBehavior(boids, context);
     } else if (this.state === "Eating") {
       this.eatingBehavior(boids, context, distances);
     }
@@ -149,13 +149,18 @@ export class Boid {
   }
 
   // Descending behavior
-  descendingBehavior(boids, context, distances) {
+  descendingBehavior(boids, context) {
     if (!context.food.getIsAnyFoodLeft()) {
       this.state = "Flying";
       return;
     }
 
     // Precompute distances to other boids
+
+    const distances = [];
+    for (let i = 0; i < boids.length; i++) {
+      distances[i] = this.position.distanceTo(boids[i].position);
+    }
 
     const sep = this.separate(boids, context, distances).multiplyScalar(1.5);
     const ali = this.align(boids, context, distances);
@@ -220,14 +225,14 @@ export class Boid {
     }
   }
 
-  // Updated separate method to use precomputed distances
+  // Updated separate method to use distances array
   separate(boids, context, distances) {
     const steer = new THREE.Vector3();
     let count = 0;
-    for (let other of boids) {
-      const d = distances.get(other);
+    for (let i = 0; i < boids.length; i++) {
+      const d = distances[i];
       if (d > 0 && d < context.DESIRED_SEPARATION) {
-        let diff = this.position.clone().sub(other.position);
+        let diff = this.position.clone().sub(boids[i].position);
         diff.normalize();
         diff.divideScalar(d); // Weight by distance
         steer.add(diff);
@@ -246,14 +251,14 @@ export class Boid {
     return steer;
   }
 
-  // Updated align method to use precomputed distances
+  // Updated align method to use distances array
   align(boids, context, distances) {
     const sum = new THREE.Vector3();
     let count = 0;
-    for (let other of boids) {
-      const d = distances.get(other);
+    for (let i = 0; i < boids.length; i++) {
+      const d = distances[i];
       if (d > 0 && d < context.NEIGHBOR_DIST) {
-        sum.add(other.velocity);
+        sum.add(boids[i].velocity);
         count++;
       }
     }
@@ -268,14 +273,14 @@ export class Boid {
     return new THREE.Vector3();
   }
 
-  // Updated cohesion method to use precomputed distances
+  // Updated cohesion method to use distances array
   cohesion(boids, context, distances) {
     const sum = new THREE.Vector3();
     let count = 0;
-    for (let other of boids) {
-      const d = distances.get(other);
+    for (let i = 0; i < boids.length; i++) {
+      const d = distances[i];
       if (d > 0 && d < context.NEIGHBOR_DIST) {
-        sum.add(other.position);
+        sum.add(boids[i].position);
         count++;
       }
     }
