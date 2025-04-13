@@ -33,12 +33,18 @@ export class Boid {
 
   // Main update method
   update(boids, context) {
+    // Precompute distances to other boids
+    const distances = new Map();
+    for (let other of boids) {
+      distances.set(other, this.position.distanceTo(other.position));
+    }
+    
     if (this.state === "Flying") {
-      this.flyingBehavior(boids, context);
+      this.flyingBehavior(boids, context, distances);
     } else if (this.state === "Descending") {
       this.descendingBehavior(boids, context);
     } else if (this.state === "Eating") {
-      this.eatingBehavior(boids, context);
+      this.eatingBehavior(boids, context, distances);
     }
 
     // Update mesh position
@@ -49,14 +55,20 @@ export class Boid {
     this.mesh.quaternion.setFromUnitVectors(axis, this.velocity.clone().normalize());
   }
 
-  // Flying behavior
-  flyingBehavior(boids, context) {
-    // Flocking behaviors
-    const sep = this.separate(boids, context).multiplyScalar(1.5);
-    const ali = this.align(boids, context);
-    const coh = this.cohesion(boids, context);
+  // Cache distances and reuse vectors to reduce redundant calculations
+  flyingBehavior(boids, context, distances) {
+    const foodPosition = context.food.getPosition();
+    const isAnyFoodLeft = context.food.getIsAnyFoodLeft();
 
-    let foodAttraction = this.getFoodAttraction(context);
+    // Flocking behaviors
+    const sep = this.separate(boids, context, distances).multiplyScalar(1.5);
+    const ali = this.align(boids, context, distances);
+    const coh = this.cohesion(boids, context, distances);
+
+    let foodAttraction = new THREE.Vector3();
+    if (!this.isFull && isAnyFoodLeft) {
+      foodAttraction.copy(foodPosition).sub(this.position).normalize().multiplyScalar(0.05);
+    }
 
     // Scare behavior: when active, add strong upward force
     let scareForce = new THREE.Vector3();
@@ -95,10 +107,10 @@ export class Boid {
     if (this.position.z < -BOUND || this.position.z > BOUND)
       this.velocity.z *= -1;
 
-    const distToFood = this.position.distanceTo(context.food.getPosition());
+    const distToFood = this.position.distanceTo(foodPosition);
 
     // Random chance to switch to "Descending" state if close to food and not full
-    if (!this.isFull && context.food.getIsAnyFoodLeft() && distToFood < context.DETECTION_RANGE) { // Increase chance and range
+    if (!this.isFull && isAnyFoodLeft && distToFood < context.DETECTION_RANGE) { // Increase chance and range
       this.state = "Descending";
       this.material.color.set(0xffa5aa); // Change color to amber when descending
     } else if (distToFood < context.DETECTION_RANGE) {
@@ -143,9 +155,15 @@ export class Boid {
       return;
     }
 
-    const sep = this.separate(boids, context).multiplyScalar(1.5);
-    const ali = this.align(boids, context);
-    const coh = this.cohesion(boids, context);
+    // Precompute distances to other boids
+    const distances = new Map();
+    for (let other of boids) {
+      distances.set(other, this.position.distanceTo(other.position));
+    }
+
+    const sep = this.separate(boids, context, distances).multiplyScalar(1.5);
+    const ali = this.align(boids, context, distances);
+    const coh = this.cohesion(boids, context, distances);
 
     let foodAttraction = this.getFoodAttraction(context);
 
@@ -176,14 +194,14 @@ export class Boid {
   }
 
   // Eating behavior
-  eatingBehavior(boids, context) {
+  eatingBehavior(boids, context, distances) {
     // Stay near the food for a while
     const foodPos = context.food.getPosition();
 
     let foodAttraction = this.getFoodAttraction(context);
 
       // Maintain separation while eating
-    const sep = this.separate(boids, context).multiplyScalar(1.5);
+    const sep = this.separate(boids, context, distances).multiplyScalar(1.5);
     this.acceleration.add(sep);
     this.acceleration.add(foodAttraction);
 
@@ -206,12 +224,12 @@ export class Boid {
     }
   }
 
-  // Separation: steer to avoid crowding local flockmates
-  separate(boids, context) {
+  // Updated separate method to use precomputed distances
+  separate(boids, context, distances) {
     const steer = new THREE.Vector3();
     let count = 0;
     for (let other of boids) {
-      const d = this.position.distanceTo(other.position);
+      const d = distances.get(other);
       if (d > 0 && d < context.DESIRED_SEPARATION) {
         let diff = this.position.clone().sub(other.position);
         diff.normalize();
@@ -232,12 +250,12 @@ export class Boid {
     return steer;
   }
 
-  // Alignment: steer toward the average heading of local flockmates
-  align(boids, context) {
+  // Updated align method to use precomputed distances
+  align(boids, context, distances) {
     const sum = new THREE.Vector3();
     let count = 0;
     for (let other of boids) {
-      const d = this.position.distanceTo(other.position);
+      const d = distances.get(other);
       if (d > 0 && d < context.NEIGHBOR_DIST) {
         sum.add(other.velocity);
         count++;
@@ -254,12 +272,12 @@ export class Boid {
     return new THREE.Vector3();
   }
 
-  // Cohesion: steer to move toward the average position of local flockmates
-  cohesion(boids, context) {
+  // Updated cohesion method to use precomputed distances
+  cohesion(boids, context, distances) {
     const sum = new THREE.Vector3();
     let count = 0;
     for (let other of boids) {
-      const d = this.position.distanceTo(other.position);
+      const d = distances.get(other);
       if (d > 0 && d < context.NEIGHBOR_DIST) {
         sum.add(other.position);
         count++;
