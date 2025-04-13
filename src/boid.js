@@ -42,7 +42,7 @@ export class Boid {
     if (this.state === "Flying") {
       this.flyingBehavior(boids, context, distances);
     } else if (this.state === "Descending") {
-      this.descendingBehavior(boids, context);
+      this.descendingBehavior(boids, context, distances);
     } else if (this.state === "Eating") {
       this.eatingBehavior(boids, context, distances);
     }
@@ -149,17 +149,13 @@ export class Boid {
   }
 
   // Descending behavior
-  descendingBehavior(boids, context) {
+  descendingBehavior(boids, context, distances) {
     if (!context.food.getIsAnyFoodLeft()) {
       this.state = "Flying";
       return;
     }
 
     // Precompute distances to other boids
-    const distances = new Map();
-    for (let other of boids) {
-      distances.set(other, this.position.distanceTo(other.position));
-    }
 
     const sep = this.separate(boids, context, distances).multiplyScalar(1.5);
     const ali = this.align(boids, context, distances);
