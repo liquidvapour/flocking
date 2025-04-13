@@ -139,66 +139,6 @@ export class Boid {
   // Descending behavior
   descendingBehavior(boids, context) {
     if (!context.food.getIsAnyFoodLeft()) {
-    if (context.scareActive && this.position.y < context.MIN_ALTITUDE - VERTICAL_MARGIN) {
-      // Calculate mouse position in normalized device coordinates (-1 to +1)
-      const mouse = new THREE.Vector2(
-        (event.clientX / window.innerWidth) * 2 - 1,
-        -(event.clientY / window.innerHeight) * 2 + 1
-      );
-
-      // Use Raycaster to find intersection point on the plane
-      const raycaster = new THREE.Raycaster();
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObject(ground.mesh);
-
-      if (intersects.length > 0) {
-        const intersectPoint = intersects[0].point;
-        const normal = ground.getNormal();
-        intersectPoint.add(normal.multiplyScalar(100)); // Place food above the ground
-        context.food.setPosition(intersectPoint);
-      }
-    }
-
-    // Update flocking parameters from sliders
-    maxSpeedSlider.addEventListener('input', () => {
-      context.MAX_SPEED = parseFloat(maxSpeedSlider.value);
-      saveSliderValues();
-    });
-
-    maxForceSlider.addEventListener('input', () => {
-      context.MAX_FORCE = parseFloat(maxForceSlider.value);
-      saveSliderValues();
-    });
-
-    neighborDistSlider.addEventListener('input', () => {
-      context.NEIGHBOR_DIST = parseFloat(neighborDistSlider.value);
-      saveSliderValues();
-    });
-
-    desiredSeparationSlider.addEventListener('input', () => {
-      context.DESIRED_SEPARATION = parseFloat(desiredSeparationSlider.value);
-      saveSliderValues();
-    });
-
-    scareFactorSlider.addEventListener('input', () => {
-      context.SCARE_FACTOR = parseFloat(scareFactorSlider.value);
-      saveSliderValues();
-    });
-
-    minAltitudeSlider.addEventListener('input', () => {
-      context.MIN_ALTITUDE = parseFloat(minAltitudeSlider.value);
-      saveSliderValues();
-    });
-
-    detectionRangeSlider.addEventListener('input', () => {
-      context.DETECTION_RANGE = parseFloat(detectionRangeSlider.value);
-      saveSliderValues();
-    });
-
-    fullTimeSlider.addEventListener('input', () => {
-      context.FULL_TIME = parseInt(fullTimeSlider.value);
-      saveSliderValues();
-    });
       this.state = "Flying";
       return;
     }
@@ -219,21 +159,19 @@ export class Boid {
     this.velocity.clampLength(0, context.MAX_SPEED);
 
     const targetPos = context.food.getPosition();
-    // Slow down when near the food based on distance
     const distToFood = this.position.distanceTo(targetPos);
-    if (context.food.getIsAnyFoodLeft && distToFood < 10) { // Adjust the distance threshold as needed
-      const speedReductionFactor = Math.max(distToFood / 10, 0.75); // Linearly reduce speed based on distance
+    if (context.food.getIsAnyFoodLeft && distToFood < 10) {
+      const speedReductionFactor = Math.max(distToFood / 10, 0.75);
       this.velocity.multiplyScalar(speedReductionFactor);
     }
 
     this.position.add(this.velocity);
     this.acceleration.set(0, 0, 0);
 
-    // Switch to "Eating" state when close to the ground
     if (this.position.distanceTo(targetPos) < 3) {
       this.state = "Eating";
       this.eatingStartTime = Date.now();
-      this.material.color.set(0xff0000); // Change color to red when eating
+      this.material.color.set(0xff0000);
     }
   }
 
