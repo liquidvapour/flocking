@@ -225,17 +225,18 @@ export class Boid {
     }
   }
 
-  // Updated separate method to use distances array
+  // Updated separate method to reuse a pre-allocated vector
   separate(boids, context, distances) {
     const steer = new THREE.Vector3();
+    const tempVector = new THREE.Vector3(); // Pre-allocated vector for reuse
     let count = 0;
     for (let i = 0; i < boids.length; i++) {
       const d = distances[i];
       if (d > 0 && d < context.DESIRED_SEPARATION) {
-        let diff = this.position.clone().sub(boids[i].position);
-        diff.normalize();
-        diff.divideScalar(d); // Weight by distance
-        steer.add(diff);
+        tempVector.copy(this.position).sub(boids[i].position); // Reuse tempVector
+        tempVector.normalize();
+        tempVector.divideScalar(d); // Weight by distance
+        steer.add(tempVector);
         count++;
       }
     }
