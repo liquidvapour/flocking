@@ -225,14 +225,14 @@ export class Boid {
     }
   }
 
-  // Updated separate method to reuse a pre-allocated vector
+  // Updated separate method to consider a radius limit
   separate(boids, context, distances) {
     const steer = new THREE.Vector3();
     const tempVector = new THREE.Vector3(); // Pre-allocated vector for reuse
     let count = 0;
     for (let i = 0; i < boids.length; i++) {
       const d = distances[i];
-      if (d > 0 && d < context.DESIRED_SEPARATION) {
+      if (d > 0 && d < context.DESIRED_SEPARATION && d < context.NEIGHBOR_RADIUS) { // Added NEIGHBOR_RADIUS check
         tempVector.copy(this.position).sub(boids[i].position); // Reuse tempVector
         tempVector.normalize();
         tempVector.divideScalar(d); // Weight by distance
@@ -252,13 +252,13 @@ export class Boid {
     return steer;
   }
 
-  // Updated align method to use distances array
+  // Updated align method to consider a radius limit
   align(boids, context, distances) {
     const sum = new THREE.Vector3();
     let count = 0;
     for (let i = 0; i < boids.length; i++) {
       const d = distances[i];
-      if (d > 0 && d < context.NEIGHBOR_DIST) {
+      if (d > 0 && d < context.NEIGHBOR_DIST && d < context.NEIGHBOR_RADIUS) { // Added NEIGHBOR_RADIUS check
         sum.add(boids[i].velocity);
         count++;
       }
@@ -274,13 +274,13 @@ export class Boid {
     return new THREE.Vector3();
   }
 
-  // Updated cohesion method to use distances array
+  // Updated cohesion method to consider a radius limit
   cohesion(boids, context, distances) {
     const sum = new THREE.Vector3();
     let count = 0;
     for (let i = 0; i < boids.length; i++) {
       const d = distances[i];
-      if (d > 0 && d < context.NEIGHBOR_DIST) {
+      if (d > 0 && d < context.NEIGHBOR_DIST && d < context.NEIGHBOR_RADIUS) { // Added NEIGHBOR_RADIUS check
         sum.add(boids[i].position);
         count++;
       }

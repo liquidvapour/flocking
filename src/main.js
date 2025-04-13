@@ -101,6 +101,7 @@ export function initScene() {
   const minAltitudeSlider = document.getElementById('minAltitude');
   const detectionRangeSlider = document.getElementById('detectionRange');
   const fullTimeSlider = document.getElementById('fullTime');
+  const neighborRadiusSlider = document.getElementById('neighborRadius');
 
   // Function to save slider values to localStorage
   function saveSliderValues() {
@@ -112,6 +113,7 @@ export function initScene() {
     localStorage.setItem('minAltitude', minAltitudeSlider.value);
     localStorage.setItem('detectionRange', detectionRangeSlider.value);
     localStorage.setItem('fullTime', fullTimeSlider.value);
+    localStorage.setItem('neighborRadius', neighborRadiusSlider.value);
   }
 
   // Function to load slider values from localStorage
@@ -148,6 +150,10 @@ export function initScene() {
       fullTimeSlider.value = localStorage.getItem('fullTime');
       context.FULL_TIME = parseInt(fullTimeSlider.value);
     }
+    if (localStorage.getItem('neighborRadius')) {
+      neighborRadiusSlider.value = localStorage.getItem('neighborRadius');
+      context.NEIGHBOR_RADIUS = parseFloat(neighborRadiusSlider.value);
+    }
   }
 
   // Load slider values from localStorage on page load
@@ -183,6 +189,10 @@ export function initScene() {
   });
   fullTimeSlider.addEventListener('input', () => {
     context.FULL_TIME = parseInt(fullTimeSlider.value);
+    saveSliderValues();
+  });
+  neighborRadiusSlider.addEventListener('input', () => {
+    context.NEIGHBOR_RADIUS = parseFloat(neighborRadiusSlider.value);
     saveSliderValues();
   });
 }
