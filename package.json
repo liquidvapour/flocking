@@ -1,0 +1,21 @@
+{
+  "name": "flocking",
+  "version": "1.0.0",
+  "description": "A 3D simulation of flocking behavior using Three.js.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "http-server",
+    "dev": "live-server --port=8080 --watch=.",
+    "deploy": "gh-pages -d ."
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "http-server": "^14.1.1",
+    "gh-pages": "^5.0.0"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.0"
+  }
+}

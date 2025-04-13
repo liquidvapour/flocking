@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>3D Flocking Simulation with Food & Scare</title>
+    <style>
+      /* Make the canvas fill the screen */
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #111;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Three.js will create a canvas for us -->
+    <!-- Load Three.js from CDN -->
+    <script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
+    <!-- Add sliders for flocking parameters -->
+    <div style="position: absolute; top: 10px; left: 10px; color: white;">
+      <label>Max Speed: <input type="range" id="maxSpeed" min="0.1" max="5" step="0.1" value="1.5"></label><br>
+      <label>Max Force: <input type="range" id="maxForce" min="0.01" max="0.1" step="0.01" value="0.03"></label><br>
+      <label>Neighbor Distance: <input type="range" id="neighborDist" min="10" max="50" step="1" value="20"></label><br>
+      <label>Desired Separation: <input type="range" id="desiredSeparation" min="1" max="20" step="1" value="5"></label><br>
+      <label>Scare Factor: <input type="range" id="scareFactor" min="0.01" max="1" step="0.01" value="0.3"></label><br>
+      <label>Min Altitude: <input type="range" id="minAltitude" min="1" max="200" step="1" value="10"></label><br>
+      <label>Detection Range: <input type="range" id="detectionRange" min="10" max="200" step="10" value="100"></label><br>
+      <label>Full Time: <input type="range" id="fullTime" min="500" max="50000" step="500" value="1000"></label><br>
+    </div>
+    <script type="module">
+      import { Boid } from './boid.js?v=${Date.now()}';
+      import { Ground } from './ground.js?v=${Date.now()}';
+      import { initScene, animate } from './main.js?v=${Date.now()}';
+
+      // Initialize the scene
+      initScene();
+
+      // Start the animation loop
+      animate();
+    </script>
+  </body>
+</html>
