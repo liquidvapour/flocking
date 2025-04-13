@@ -32,7 +32,7 @@ This project is a 3D simulation of flocking behavior, built using the Three.js l
 
 ## Live Demo
 
-You can view the live demo of the simulation here: [Flocking Simulation on GitHub Pages](https://liquidvapour.github.io/<repository-name>/)
+You can view the live demo of the simulation here: [Flocking Simulation on GitHub Pages](https://liquidvapour.github.io/flocking/)
 
 Replace `<your-github-username>` with your GitHub username and `<repository-name>` with the name of your repository.
 
